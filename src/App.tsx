@@ -322,13 +322,13 @@ export default function App() {
                 const safeErrors = Array.isArray(pageData.errors) ? pageData.errors : [];
                 const adjustedErrors = safeErrors.map((err: any) => ({
                   ...err,
-                  id: eal-vis-p + (i + 1) + - + (err.id || Math.random().toString(36)),
+                  id: "real-vis-p" + (i + 1) + "-" + (err.id || Math.random().toString(36)),
                   startIndex: (err.startIndex || 0) + offset,
                   endIndex: (err.endIndex || 1) + offset
                 }));
                 pageData.errors = safeErrors.map((err: any) => ({
                   ...err,
-                  id: eal-vis-p + (i + 1) + - + (err.id || Math.random().toString(36))
+                  id: "real-vis-p" + (i + 1) + "-" + (err.id || Math.random().toString(36))
                 }));
                 
                 allErrors = [...allErrors, ...adjustedErrors];
@@ -723,6 +723,7 @@ const CheckCircle2 = ({ className }: { className?: string }) => (
     <polyline points="22 4 12 14.01 9 11.01" />
   </svg>
 );
+
 
 
 

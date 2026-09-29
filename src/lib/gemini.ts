@@ -27,7 +27,7 @@ export interface AnalysisResult {
 
 export async function analyzeDocument(fileBase64: string, mimeType: string): Promise<AnalysisResult> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos max por peticion
+  const timeoutId = setTimeout(() => controller.abort(), 120000); // 60 segundos max por peticion
   
   try {
     const response = await fetch('/api/gemini/analyze-document', {
@@ -86,7 +86,7 @@ export async function analyzeText(input: string): Promise<AnalysisResult> {
 
 export async function analyzeMultipleTexts(pages: Array<{ name: string, text: string }>): Promise<AnalysisResult> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000);
+  const timeoutId = setTimeout(() => controller.abort(), 120000);
   
   try {
     const response = await fetch('/api/gemini/analyze-multiple-texts', {
@@ -108,5 +108,6 @@ export async function analyzeMultipleTexts(pages: Array<{ name: string, text: st
     clearTimeout(timeoutId);
   }
 }
+
 
 
