@@ -252,35 +252,44 @@ export default function App() {
             let verbatimFull = "";
             let completedPages = 0;
 
-            const processImage = async (b64: string, index: number) => {
+                        const processImage = async (b64: string, index: number, attempt = 1) => {
               try {
                 const partialResult = await analyzeDocument(b64, 'image/jpeg');
                 allPages[index] = {
-                  name: Página  + (index + 1),
+                  name: "Página " + (index + 1),
                   score: partialResult.score || 100,
                   verbatim: partialResult.verbatim || "",
                   errors: partialResult.errors || []
                 };
-              } catch (pageError: any) {
-                console.warn("Página visual " + (index + 1) + " falló", pageError);
-                allPages[index] = {
-                  name: Página  + (index + 1),
-                  score: 0,
-                  verbatim: "",
-                  errors: [{
-                    id: "error-skip-vis-" + index,
-                    startIndex: 0,
-                    endIndex: 1,
-                    suggestion: "?? No se pudo analizar esta página visualmente.",
-                    reason: "Error de servidor.",
-                    type: "ortografía",
-                    severity: "high"
-                  }]
-                };
-              } finally {
                 completedPages++;
                 setAnalysisProgress(Math.floor(50 + (45 * (completedPages / totalPgs))));
                 setAnalysisStatus("Auditoría visual página " + Math.min(completedPages + 1, totalPgs) + " de " + totalPgs + "...");
+              } catch (pageError: any) {
+                if (attempt < 4) {
+                  setAnalysisStatus("Reintentando página " + (index + 1) + " (Intento " + (attempt + 1) + "/4)...");
+                  console.warn("Página " + (index + 1) + " falló, reintentando en 5s...", pageError);
+                  await new Promise(r => setTimeout(r, 5000));
+                  await processImage(b64, index, attempt + 1);
+                } else {
+                  console.warn("Página visual " + (index + 1) + " falló definitivamente", pageError);
+                  allPages[index] = {
+                    name: "Página " + (index + 1),
+                    score: 0,
+                    verbatim: "",
+                    errors: [{
+                      id: "error-skip-vis-" + index,
+                      startIndex: 0,
+                      endIndex: 1,
+                      suggestion: "?? No se pudo analizar esta página tras 4 intentos.",
+                      reason: "Error de conexión o bloqueo de Google.",
+                      type: "ortografía",
+                      severity: "high"
+                    }]
+                  };
+                  completedPages++;
+                  setAnalysisProgress(Math.floor(50 + (45 * (completedPages / totalPgs))));
+                  setAnalysisStatus("Auditoría visual página " + Math.min(completedPages + 1, totalPgs) + " de " + totalPgs + "...");
+                }
               }
             };
 
@@ -714,6 +723,9 @@ const CheckCircle2 = ({ className }: { className?: string }) => (
     <polyline points="22 4 12 14.01 9 11.01" />
   </svg>
 );
+
+
+
 
 
 

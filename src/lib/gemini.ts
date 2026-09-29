@@ -1,4 +1,4 @@
-// Client-side wrappers for the secure server-side Gemini API endpoints
+﻿// Client-side wrappers for the secure server-side Gemini API endpoints
 
 export interface AnalysisError {
   id: string;
@@ -26,20 +26,28 @@ export interface AnalysisResult {
 }
 
 export async function analyzeDocument(fileBase64: string, mimeType: string): Promise<AnalysisResult> {
-  const response = await fetch('/api/gemini/analyze-document', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ fileBase64, mimeType }),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos max por peticion
+  
+  try {
+    const response = await fetch('/api/gemini/analyze-document', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ fileBase64, mimeType }),
+      signal: controller.signal
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `Error al procesar el documento (${response.status})`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `Error al procesar el documento (${response.status})`);
+    }
+
+    return await response.json() as AnalysisResult;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  return response.json() as Promise<AnalysisResult>;
 }
 
 export async function analyzeMultipleDocuments(files: Array<{ base64: string, mimeType: string }>): Promise<AnalysisResult> {
@@ -77,18 +85,28 @@ export async function analyzeText(input: string): Promise<AnalysisResult> {
 }
 
 export async function analyzeMultipleTexts(pages: Array<{ name: string, text: string }>): Promise<AnalysisResult> {
-  const response = await fetch('/api/gemini/analyze-multiple-texts', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ pages }),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
+  
+  try {
+    const response = await fetch('/api/gemini/analyze-multiple-texts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ pages }),
+      signal: controller.signal
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `Error al analizar los textos de las páginas (${response.status})`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `Error al analizar los textos de las páginas (${response.status})`);
+    }
+
+    return await response.json() as AnalysisResult;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  return response.json() as Promise<AnalysisResult>;
 }
+
+
