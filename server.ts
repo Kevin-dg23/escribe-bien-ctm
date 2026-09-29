@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
@@ -229,10 +229,15 @@ function normalizeErrors(rawErrors: any, verbatim: string, offset = 0, idPrefix 
     }
     if (startIndex < 0) return [];
 
+    const corrected = typeof raw.corrected === 'string' ? raw.corrected : '';
+
+    // Si original y corrección son idénticos, la IA se contradijo — descartar el "error".
+    if (original.trim() === corrected.trim()) return [];
+
     return [{
       id: String(raw.id || `${idPrefix}-${index + 1}`),
       original,
-      corrected: typeof raw.corrected === 'string' ? raw.corrected : '',
+      corrected,
       explanation: typeof raw.explanation === 'string' ? raw.explanation : 'Revisar este fragmento.',
       type: ['ortografía', 'gramática', 'puntuación'].includes(raw.type) ? raw.type : 'ortografía',
       startIndex: startIndex + offset,
