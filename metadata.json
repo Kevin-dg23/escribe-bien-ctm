@@ -1,0 +1,8 @@
+{
+  "name": "Escribe Bien CTM",
+  "description": "Herramienta de transcripción literal y análisis ortográfico avanzado para imágenes y PDFs. Detecta errores tal cual aparecen en el original.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
