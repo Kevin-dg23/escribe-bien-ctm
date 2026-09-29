@@ -81,10 +81,12 @@ export async function convertPDFToImages(file: File): Promise<string[]> {
     const dataUrl = canvas.toDataURL('image/jpeg', 0.65);
     const base64Data = dataUrl.split(',')[1];
     imagesBase64.push(base64Data);
-      canvas.width = 0;
-      canvas.height = 0;
-      page.cleanup();
-    }
+
+    // Liberar memoria RAM después de cada página (crítico para PDFs de 50+ páginas)
+    canvas.width = 0;
+    canvas.height = 0;
+    page.cleanup();
+  }
 
   return imagesBase64;
 }

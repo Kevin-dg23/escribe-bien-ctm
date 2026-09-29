@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Info, PenTool, Image as ImageIcon, FileText, Layers, Trash2 } from 'lucide-react';
 import FileUploader from './components/FileUploader';
@@ -28,7 +28,7 @@ export default function App() {
       date: Date.now(),
       fileName: fileName || 'Texto Anónimo',
       score: newResult.score,
-      errors: newResult.pages.reduce((acc, p) => acc + p.errors.length, 0),
+      errors: (newResult.pages ?? []).reduce((acc, p) => acc + p.errors.length, 0),
       result: newResult
     };
     setHistory(prev => {
@@ -143,33 +143,41 @@ export default function App() {
         
         let completedPages = 0;
         
-        const processPage = async (page: any, index: number) => {
+        const processPage = async (page: any, index: number, attempt = 1) => {
           try {
             const partialResult = await analyzeMultipleTexts([page]);
             if (partialResult.pages && partialResult.pages.length > 0) {
               allPages[index] = partialResult.pages[0];
             }
-          } catch (pageError: any) {
-            console.warn(`Página ${index + 1} falló, omitiendo...`, pageError);
-            // Inyectar un resultado vacío/falso para que no rompa el PDF completo
-            allPages[index] = {
-              name: page.name || `Página ${index + 1}`,
-              score: 0,
-              verbatim: page.text || "",
-              errors: [{
-                id: `error-skip-${index}`,
-                startIndex: 0,
-                endIndex: 1,
-                suggestion: "⚠️ No se pudo analizar esta página por saturación de Google.",
-                reason: "Error de servidor.",
-                type: "ortografía",
-                severity: "high"
-              }]
-            };
-          } finally {
             completedPages++;
             setAnalysisProgress(Math.floor(40 + (55 * (completedPages / totalPgs))));
-            setAnalysisStatus(`Auditando página ${Math.min(completedPages + 1, totalPgs)} de ${totalPgs}... (Doble motor)`);
+            setAnalysisStatus("Auditando pagina " + Math.min(completedPages + 1, totalPgs) + " de " + totalPgs + "... (Doble motor)");
+          } catch (pageError: any) {
+            if (attempt < 4) {
+              setAnalysisStatus("Reintentando pagina de texto " + (index + 1) + " (Intento " + (attempt + 1) + "/4)...");
+              console.warn("Pagina " + (index + 1) + " fallo, reintentando en 3s...", pageError);
+              await new Promise(r => setTimeout(r, 3000));
+              await processPage(page, index, attempt + 1);
+            } else {
+              console.warn("Pagina " + (index + 1) + " fallo definitivamente", pageError);
+              allPages[index] = {
+                name: page.name || "Pagina " + (index + 1),
+                score: 0,
+                verbatim: page.text || "",
+                errors: [{
+                  id: "error-skip-" + index,
+                  startIndex: 0,
+                  endIndex: 1,
+                  suggestion: "No se pudo analizar esta pagina tras 4 intentos.",
+                  reason: "Error de servidor o limite de cuota.",
+                  type: "ortografia",
+                  severity: "high"
+                }]
+              };
+              completedPages++;
+              setAnalysisProgress(Math.floor(40 + (55 * (completedPages / totalPgs))));
+              setAnalysisStatus("Auditando pagina " + Math.min(completedPages + 1, totalPgs) + " de " + totalPgs + "...");
+            }
           }
         };
 
