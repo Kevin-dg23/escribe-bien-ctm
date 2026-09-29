@@ -350,7 +350,19 @@ app.post('/api/gemini/analyze-document', async (req, res) => {
     });
     const responseText = response.text;
     if (!responseText) throw new Error('No se pudo obtener respuesta del modelo de IA.');
-    return res.json(JSON.parse(responseText));
+    const parsed = JSON.parse(responseText);
+    // Aplicar el mismo filtro de normalización que se usa en los otros endpoints
+    // (filtra errores donde original === corrected, corrige índices, etc.)
+    const verbatim = typeof parsed.verbatim === 'string' ? parsed.verbatim : '';
+    parsed.errors = normalizeErrors(parsed.errors, verbatim, 0, 'vis');
+    if (Array.isArray(parsed.pages)) {
+      parsed.pages = parsed.pages.map((page: any, pi: number) => {
+        const pv = typeof page.verbatim === 'string' ? page.verbatim : '';
+        page.errors = normalizeErrors(page.errors, pv, 0, `vis-p${pi + 1}`);
+        return page;
+      });
+    }
+    return res.json(parsed);
   } catch (error: any) {
     console.error('Error en /api/gemini/analyze-document:', error);
     return res.status(500).json({ error: formatErrorMessage(error) });
@@ -376,7 +388,17 @@ app.post('/api/gemini/analyze-multiple-documents', async (req, res) => {
     });
     const responseText = response.text;
     if (!responseText) throw new Error('No se pudo obtener respuesta del modelo de IA.');
-    return res.json(JSON.parse(responseText));
+    const parsed = JSON.parse(responseText);
+    const verbatim = typeof parsed.verbatim === 'string' ? parsed.verbatim : '';
+    parsed.errors = normalizeErrors(parsed.errors, verbatim, 0, 'vis');
+    if (Array.isArray(parsed.pages)) {
+      parsed.pages = parsed.pages.map((page: any, pi: number) => {
+        const pv = typeof page.verbatim === 'string' ? page.verbatim : '';
+        page.errors = normalizeErrors(page.errors, pv, 0, `vis-p${pi + 1}`);
+        return page;
+      });
+    }
+    return res.json(parsed);
   } catch (error: any) {
     console.error('Error en /api/gemini/analyze-multiple-documents:', error);
     return res.status(500).json({ error: formatErrorMessage(error) });
