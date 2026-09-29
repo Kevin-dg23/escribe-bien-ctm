@@ -301,7 +301,7 @@ export default function App() {
                   resolve();
                   return;
                 }
-                while (running < 1 && queueIndex < totalPgs) {
+                while (running < 2 && queueIndex < totalPgs) {
                   const i = queueIndex++;
                   running++;
                   processImage(imagesBase64[i], i).then(() => {
@@ -723,6 +723,7 @@ const CheckCircle2 = ({ className }: { className?: string }) => (
     <polyline points="22 4 12 14.01 9 11.01" />
   </svg>
 );
+
 
 
 
