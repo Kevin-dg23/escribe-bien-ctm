@@ -497,7 +497,7 @@ export default function App() {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
                     <FileUploader 
                       onFileSelect={handleFileSelect} 
                       mode="image"
@@ -513,6 +513,14 @@ export default function App() {
                       title="Documento PDF"
                       description="Sube cualquier PDF. Detectaráá automáticamente si es digital o un escaneo."
                       icon={<FileText className="w-6 h-6 text-red-600" />}
+                      <FileUploader 
+                        onFileSelect={handleFileSelect} 
+                        mode="scanned-pdf"
+                        accept=".pdf"
+                        title="PDF Visual / Diseño"
+                        description="Manuales de marca, escaneos o presentaciones. Lo lee como se ve."
+                        icon={<FileText className="w-6 h-6 text-red-600" />}
+                      />
                     />
                   </div>
                   
