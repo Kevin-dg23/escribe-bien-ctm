@@ -265,13 +265,13 @@ export default function App() {
                   errors: partialResult.errors || []
                 };
               } catch (pageError: any) {
-                console.warn(Página visual  + (index + 1) +  falló, pageError);
+                console.warn("Página visual " + (index + 1) + " falló", pageError);
                 allPages[index] = {
                   name: Página  + (index + 1),
                   score: 0,
                   verbatim: "",
                   errors: [{
-                    id: error-skip-vis- + index,
+                    id: "error-skip-vis-" + index,
                     startIndex: 0,
                     endIndex: 1,
                     suggestion: "?? No se pudo analizar esta página visualmente.",
@@ -283,7 +283,7 @@ export default function App() {
               } finally {
                 completedPages++;
                 setAnalysisProgress(Math.floor(50 + (45 * (completedPages / totalPgs))));
-                setAnalysisStatus(Auditoría visual página  + Math.min(completedPages + 1, totalPgs) +  de  + totalPgs + ...);
+                setAnalysisStatus("Auditoría visual página " + Math.min(completedPages + 1, totalPgs) + " de " + totalPgs + "...");
               }
             };
 
@@ -339,7 +339,7 @@ export default function App() {
                verbatim: verbatimFull.trim(),
                errors: allErrors,
                score: finalScore,
-               summary: Se analizaron  + totalPgs +  páginas visualmente.,
+               summary: "Se analizaron " + totalPgs + " páginas visualmente.",
                pages: validPages
             };
             
@@ -717,6 +717,7 @@ const CheckCircle2 = ({ className }: { className?: string }) => (
     <polyline points="22 4 12 14.01 9 11.01" />
   </svg>
 );
+
 
 
 
