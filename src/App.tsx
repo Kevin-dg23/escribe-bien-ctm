@@ -249,8 +249,99 @@ export default function App() {
             setAnalysisProgress(50);
             setAnalysisStatus('Auditoría visual en curso (evadiendo límite de peso)...');
             
-            const filesPayload = imagesBase64.map(b64 => ({ base64: b64, mimeType: 'image/jpeg' }));
-            const analysisResult = await analyzeMultipleDocuments(filesPayload);
+            const totalPgs = imagesBase64.length;
+            const allPages = new Array(totalPgs).fill(null);
+            let allErrors: any[] = [];
+            let verbatimFull = "";
+            let completedPages = 0;
+
+            const processImage = async (b64: string, index: number) => {
+              try {
+                const partialResult = await analyzeDocument(b64, 'image/jpeg');
+                allPages[index] = {
+                  name: Página  + (index + 1),
+                  score: partialResult.score || 100,
+                  verbatim: partialResult.verbatim || "",
+                  errors: partialResult.errors || []
+                };
+              } catch (pageError: any) {
+                console.warn(Página visual  + (index + 1) +  falló, pageError);
+                allPages[index] = {
+                  name: Página  + (index + 1),
+                  score: 0,
+                  verbatim: "",
+                  errors: [{
+                    id: error-skip-vis- + index,
+                    startIndex: 0,
+                    endIndex: 1,
+                    suggestion: "?? No se pudo analizar esta página visualmente.",
+                    reason: "Error de servidor.",
+                    type: "ortografía",
+                    severity: "high"
+                  }]
+                };
+              } finally {
+                completedPages++;
+                setAnalysisProgress(Math.floor(50 + (45 * (completedPages / totalPgs))));
+                setAnalysisStatus(Auditoría visual página  + Math.min(completedPages + 1, totalPgs) +  de  + totalPgs + ...);
+              }
+            };
+
+            await new Promise<void>((resolve) => {
+              let running = 0;
+              let queueIndex = 0;
+              const next = () => {
+                if (completedPages === totalPgs) {
+                  resolve();
+                  return;
+                }
+                while (running < 2 && queueIndex < totalPgs) {
+                  const i = queueIndex++;
+                  running++;
+                  processImage(imagesBase64[i], i).then(() => {
+                    setTimeout(() => {
+                      running--;
+                      next();
+                    }, 2000);
+                  });
+                }
+              };
+              next();
+            });
+
+            for (let i = 0; i < totalPgs; i++) {
+              const pageData = allPages[i];
+              if (pageData) {
+                const offset = verbatimFull.length;
+                const safeErrors = Array.isArray(pageData.errors) ? pageData.errors : [];
+                const adjustedErrors = safeErrors.map((err: any) => ({
+                  ...err,
+                  id: eal-vis-p + (i + 1) + - + (err.id || Math.random().toString(36)),
+                  startIndex: (err.startIndex || 0) + offset,
+                  endIndex: (err.endIndex || 1) + offset
+                }));
+                pageData.errors = safeErrors.map((err: any) => ({
+                  ...err,
+                  id: eal-vis-p + (i + 1) + - + (err.id || Math.random().toString(36))
+                }));
+                
+                allErrors = [...allErrors, ...adjustedErrors];
+                verbatimFull += pageData.verbatim + "\n\n";
+              }
+            }
+
+            const validPages = allPages.filter(Boolean);
+            const finalScore = validPages.length > 0 
+               ? Math.round(validPages.reduce((acc, p) => acc + p.score, 0) / validPages.length) 
+               : 100;
+               
+            const analysisResult = {
+               verbatim: verbatimFull.trim(),
+               errors: allErrors,
+               score: finalScore,
+               summary: Se analizaron  + totalPgs +  páginas visualmente.,
+               pages: validPages
+            };
             
             setAnalysisProgress(100);
             setAnalysisStatus('Análisis completado');
@@ -626,6 +717,7 @@ const CheckCircle2 = ({ className }: { className?: string }) => (
     <polyline points="22 4 12 14.01 9 11.01" />
   </svg>
 );
+
 
 
 
