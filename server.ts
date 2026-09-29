@@ -337,7 +337,7 @@ app.post('/api/gemini/analyze-document', async (req, res) => {
 
     const response = await generateContentWithFallback({
       contents: [{ parts: [
-        { text: `Eres un corrector profesional de español. Primero transcribe el archivo adjunto de forma 100% literal, sin corregirlo. Después audita todas las palabras y oraciones para encontrar cada error detectable de ortografía, gramática y puntuación. No ignores errores pequeños. Devuelve índices exactos: verbatim.slice(startIndex, endIndex) debe ser igual a original. Separa cada página en pages, con errores e índices locales; la raíz consolida todas las páginas.` },
+        { text: `Eres un corrector profesional de español. Primero transcribe el texto de la imagen uniendo de forma lógica las palabras. Si el texto tiene un diseño artístico, está escrito en vertical o rotado, NO lo transcribas letra por letra con saltos de línea; únelo de forma lineal en formato de párrafo, PERO CONSERVANDO EXACTAMENTE los mismos errores ortográficos, gramaticales o de tipeo de la imagen. ESTÁ ESTRICTAMENTE PROHIBIDO corregir o mejorar el texto durante la transcripción. Después audita todas las palabras y oraciones para encontrar cada error detectable de ortografía, gramática y puntuación. No ignores errores pequeños. Devuelve índices exactos: verbatim.slice(startIndex, endIndex) debe ser igual a original. Separa cada página en pages, con errores e índices locales; la raíz consolida todas las páginas.` },
         { inlineData: { data, mimeType } }
       ] }],
       config: { responseMimeType: 'application/json', responseSchema: analysisResultSchema }
@@ -412,5 +412,10 @@ async function startViteServer() {
 }
 
 startViteServer().catch((err) => console.error('Error iniciando servidor Vite:', err));
+
+
+
+
+
 
 
