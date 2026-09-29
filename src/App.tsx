@@ -7,7 +7,7 @@ import AnalysisView from './components/AnalysisView';
 import HandLogo from './components/HandLogo';
 import { analyzeDocument, analyzeText, analyzeMultipleDocuments, analyzeMultipleTexts, AnalysisResult } from './lib/gemini';
 import { downloadAnalysisPDF } from './lib/pdf';
-import { extractPagesFromPDF } from './lib/pdfExtractor';
+import { extractPagesFromPDF, convertPDFToImages } from './lib/pdfExtractor';
 import { cn } from './lib/utils';
 
 export default function App() {
@@ -241,21 +241,41 @@ export default function App() {
         setResult(analysisResultFinal);
         saveToHistory(analysisResultFinal, currentFileName || 'Texto Anónimo');
         setView('analysis');
-      } else {
-        setAnalysisProgress(20);
-        setAnalysisStatus('Cargando archivo...');
-        const base64 = await readFileAsBase64(file);
-        
-        setAnalysisProgress(40);
-        setAnalysisStatus('Leyendo el documento de forma literal...');
-        const mimeType = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream');
-        const analysisResult = await analyzeDocument(base64, mimeType);
-        
-        setAnalysisProgress(100);
-        setAnalysisStatus('Análisis completado');
-        setResult(analysisResult); saveToHistory(analysisResult, currentFileName || 'Texto Anónimo'); setView('analysis');
-      }
-    } catch (err: any) {
+              } else {
+          setAnalysisProgress(20);
+          setAnalysisStatus('Procesando y optimizando el PDF visualmente...');
+          try {
+            const imagesBase64 = await convertPDFToImages(file);
+            setAnalysisProgress(50);
+            setAnalysisStatus('Auditoría visual en curso (evadiendo límite de peso)...');
+            
+            const filesPayload = imagesBase64.map(b64 => ({ base64: b64, mimeType: 'image/jpeg' }));
+            const analysisResult = await analyzeMultipleDocuments(filesPayload);
+            
+            setAnalysisProgress(100);
+            setAnalysisStatus('Análisis completado');
+            setResult(analysisResult); 
+            saveToHistory(analysisResult, currentFileName || 'Texto Anónimo'); 
+            setView('analysis');
+          } catch(err) {
+            console.warn("Fallo la conversión de PDF a imágenes, cayendo en modo base64...", err);
+            setAnalysisProgress(30);
+            setAnalysisStatus('Cargando archivo en crudo...');
+            const base64 = await readFileAsBase64(file);
+            
+            setAnalysisProgress(50);
+            setAnalysisStatus('Leyendo el documento completo...');
+            const mimeType = file.type || 'application/pdf';
+            const analysisResult = await analyzeDocument(base64, mimeType);
+            
+            setAnalysisProgress(100);
+            setAnalysisStatus('Análisis completado');
+            setResult(analysisResult); 
+            saveToHistory(analysisResult, currentFileName || 'Texto Anónimo'); 
+            setView('analysis');
+          }
+        }
+      } catch (err: any) {
       console.error("Error al procesar el archivo:", err);
       setError(err.message || "Error al procesar el archivo. Asegúrate de que el archivo sea legible.");
     } finally {
@@ -606,6 +626,8 @@ const CheckCircle2 = ({ className }: { className?: string }) => (
     <polyline points="22 4 12 14.01 9 11.01" />
   </svg>
 );
+
+
 
 
 
