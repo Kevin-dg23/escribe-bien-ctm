@@ -497,34 +497,34 @@ export default function App() {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-                    <FileUploader 
-                      onFileSelect={handleFileSelect} 
-                      mode="image"
-                      accept="image/*"
-                      title="Imágenes Sueltas"
-                      description="Capturas, fotos de pizarra o notas a mano. Formatos JPG, PNG, WEBP."
-                      icon={<ImageIcon className="w-6 h-6 text-red-600" />}
-                    />
-                    <FileUploader 
-                      onFileSelect={handleFileSelect} 
-                      mode="digital-pdf"
-                      accept=".pdf"
-                      title="Documento PDF"
-                      description="Sube cualquier PDF. Detectaráá automáticamente si es digital o un escaneo."
-                      icon={<FileText className="w-6 h-6 text-red-600" />}
+                                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                      <FileUploader 
+                        onFileSelect={handleFileSelect} 
+                        mode="image"
+                        accept="image/*"
+                        title="Imágenes Sueltas"
+                        description="Capturas, fotos de pizarra o notas a mano. Formatos JPG, PNG, WEBP."
+                        icon={<ImageIcon className="w-6 h-6 text-red-600" />}
+                      />
+                      <FileUploader 
+                        onFileSelect={handleFileSelect} 
+                        mode="digital-pdf"
+                        accept=".pdf"
+                        title="Documento PDF"
+                        description="Sube cualquier PDF. Extrae el texto página por página de forma literal."
+                        icon={<FileText className="w-6 h-6 text-red-600" />}
+                      />
                       <FileUploader 
                         onFileSelect={handleFileSelect} 
                         mode="scanned-pdf"
                         accept=".pdf"
                         title="PDF Visual / Diseño"
                         description="Manuales de marca, escaneos o presentaciones. Lo lee como se ve."
-                        icon={<FileText className="w-6 h-6 text-red-600" />}
+                        icon={<FileText className="w-6 h-6 text-rose-500" />}
                       />
-                    />
-                  </div>
-                  
-                  {error && (
+                    </div>
+                    
+                    {error && (
                     <div className="p-4 bg-rose-50 border border-rose-100 rounded-xl text-rose-600 text-sm font-medium flex items-center gap-2 max-w-2xl">
                         <Info className="w-4 h-4" />
                         {error}
@@ -606,6 +606,7 @@ const CheckCircle2 = ({ className }: { className?: string }) => (
     <polyline points="22 4 12 14.01 9 11.01" />
   </svg>
 );
+
 
 
 
