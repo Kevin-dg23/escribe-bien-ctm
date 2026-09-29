@@ -33,7 +33,7 @@ export default function App() {
     };
     setHistory(prev => {
       const updated = [newItem, ...prev].slice(0, 15);
-      localStorage.setItem('ctm_history', JSON.stringify(updated));
+      try { localStorage.setItem('ctm_history', JSON.stringify(updated)); } catch(e) { console.error('History quota exceeded', e); }
       return updated;
     });
   };
@@ -311,7 +311,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex flex-col-reverse md:flex-row h-screen w-full bg-slate-50 text-slate-900 font-sans overflow-hidden">
+    <div className="flex flex-col md:flex-row h-screen w-full bg-slate-50 text-slate-900 font-sans overflow-hidden">
       {/* Sidebar Navigation */}
       <aside className="w-full h-16 md:w-28 md:h-screen bg-stone-100 flex flex-row md:flex-col items-center justify-between md:justify-start px-4 md:px-0 py-2 md:py-8 gap-2 md:gap-8 z-20 shrink-0 border-t border-slate-200 md:border-r md:border-t-0 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] md:shadow-md">
         <div 
@@ -598,6 +598,9 @@ const CheckCircle2 = ({ className }: { className?: string }) => (
     <polyline points="22 4 12 14.01 9 11.01" />
   </svg>
 );
+
+
+
 
 
 
