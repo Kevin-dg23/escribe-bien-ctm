@@ -231,13 +231,16 @@ export default function App() {
            
         setAnalysisProgress(100);
         setAnalysisStatus('Análisis completado');
-        setResult({
+        const analysisResultFinal = {
            verbatim: verbatimFull.trim(),
            errors: allErrors,
            score: finalScore,
            summary: `Se analizaron ${totalPgs} páginas.`,
            pages: validPages
-        });
+        };
+        setResult(analysisResultFinal);
+        saveToHistory(analysisResultFinal, currentFileName || 'Texto Anónimo');
+        setView('analysis');
       } else {
         setAnalysisProgress(20);
         setAnalysisStatus('Cargando archivo...');
@@ -595,6 +598,8 @@ const CheckCircle2 = ({ className }: { className?: string }) => (
     <polyline points="22 4 12 14.01 9 11.01" />
   </svg>
 );
+
+
 
 
 
